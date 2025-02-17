@@ -1,0 +1,44 @@
+#include <Stepper.h>
+#include <DFRobot_DHT11.h>
+#include <SoftwareSerial.h>
+
+#define MQ7_PIN A0   // Pin connected to MQ-7
+#define MQ4_PIN A1   // Pin connected to MQ-4
+const int DHT11_PIN = 7; 
+DFRobot_DHT11 DHT; 
+
+SoftwareSerial bt(9, 8); // RX, TX
+
+
+void setup() {
+  Serial.begin(9600);       
+  bt.begin(9600);     // For HC-05 Bluetooth communication
+  
+}
+
+void loop() {
+ 
+  DHT.read(DHT11_PIN); // Read data from the DHT11 sensor
+  int temp;
+  temp = DHT.temperature; // Read temperature in Celsius
+
+
+  int mq7_value = analogRead(MQ7_PIN); // Carbon Monoxide
+  int mq4_value = analogRead(MQ4_PIN); // Methane
+  int mq7_ppm = map(mq7_value, 0, 1023, 200, 10000);
+  int mq4_ppm = map(mq4_value, 0, 1023, 200, 10000); 
+  int mq7_percent = map(mq7_ppm, 200, 10000, 0, 100);
+  int mq4_percent = map(mq4_ppm , 200, 10000, 0, 100);//Convert to percentages
+
+
+ bt.print(temp); //send temperature to MIT App
+ bt.print(";");
+ bt.print(mq7_percent); //send carbon monoxide data to MIT App 
+ bt.print(";");
+ bt.print(mq4_percent); //send methane data to MIT App 
+ bt.println(";");
+ 
+
+
+  delay(1000); // Wait for 1 seconds before the next reading
+}
